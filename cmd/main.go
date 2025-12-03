@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+    "ecommerce-backend-golang/internal/routes"
+)
 
 func main() {
-    fmt.Println("E-Commerce Backend running...")
+    r := routes.SetupRouter()
+
+    r.Run(":8080") // Run server on port 8080
 }

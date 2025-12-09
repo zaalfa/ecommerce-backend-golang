@@ -1,24 +1,32 @@
 package repositories
 
 import (
-	"ecommerce-backend-golang/internal/config"
 	"ecommerce-backend-golang/internal/models"
+	"gorm.io/gorm"
 )
 
-type ProductRepository struct{}
+type ProductRepository struct {
+	db *gorm.DB
+}
+
+func NewProductRepository(db *gorm.DB) *ProductRepository {
+	return &ProductRepository{
+		db: db,
+	}
+}
 
 func (r *ProductRepository) Create(product *models.Product) error {
-	return config.DB.Create(product).Error
+	return r.db.Create(product).Error
 }
 
 func (r *ProductRepository) FindAll() ([]models.Product, error) {
 	var products []models.Product
-	err := config.DB.Find(&products).Error
+	err := r.db.Find(&products).Error
 	return products, err
 }
 
 func (r *ProductRepository) FindByID(id uint) (*models.Product, error) {
 	var product models.Product
-	err := config.DB.First(&product, id).Error
+	err := r.db.First(&product, id).Error
 	return &product, err
 }

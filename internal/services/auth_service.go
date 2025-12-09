@@ -10,9 +10,14 @@ import (
 )
 
 type AuthService struct {
-	userRepo repositories.UserRepository
+	userRepo *repositories.UserRepository
 }
 
+func NewAuthService(userRepo *repositories.UserRepository) *AuthService {
+	return &AuthService{
+		userRepo: userRepo,
+	}
+}
 func (s *AuthService) Register(name, email, password string) error {
 	hashed, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 

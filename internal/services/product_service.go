@@ -6,7 +6,13 @@ import (
 )
 
 type ProductService struct {
-	productRepo repositories.ProductRepository
+	productRepo *repositories.ProductRepository
+}
+
+func NewProductService(repo *repositories.ProductRepository) *ProductService {
+	return &ProductService{
+		productRepo: repo,
+	}
 }
 
 func (s *ProductService) Create(product *models.Product) error {

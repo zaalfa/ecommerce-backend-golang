@@ -9,7 +9,13 @@ import (
 )
 
 type AuthController struct {
-	authService services.AuthService
+	authService *services.AuthService
+}
+
+func NewAuthController(authService *services.AuthService) *AuthController {
+	return &AuthController{
+		authService: authService,
+	}
 }
 
 func (c *AuthController) Register(ctx *gin.Context) {

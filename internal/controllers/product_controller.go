@@ -10,8 +10,15 @@ import (
 )
 
 type ProductController struct {
-	productService services.ProductService
+	productService *services.ProductService
 }
+
+func NewProductController(service *services.ProductService) *ProductController {
+	return &ProductController{
+		productService: service,
+	}
+}
+
 
 func (c *ProductController) Create(ctx *gin.Context) {
 	var product models.Product
@@ -30,7 +37,14 @@ func (c *ProductController) Create(ctx *gin.Context) {
 }
 
 func (c *ProductController) GetAll(ctx *gin.Context) {
-	products, _ := c.productService.GetAll()
+	products, err := c.productService.GetAll()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to fetch products",
+		})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, products)
 }
 

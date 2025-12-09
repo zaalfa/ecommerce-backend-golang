@@ -1,41 +1,54 @@
 package routes
 
 import (
+	"ecommerce-backend-golang/internal/repositories"
+	"ecommerce-backend-golang/internal/services"
 	"ecommerce-backend-golang/internal/controllers"
 	"ecommerce-backend-golang/internal/middleware"
-
+	"ecommerce-backend-golang/internal/config"
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	authController := controllers.AuthController{}
-	userController := controllers.UserController{}
-	productController := controllers.ProductController{}
+	db := config.DB 
+	// repositories
+	productRepo := repositories.NewProductRepository(db)
+	userRepo := repositories.NewUserRepository(db)
 
-	r.POST("/auth/register", authController.Register)
-	r.POST("/auth/login", authController.Login)
+	// services
+	productService := services.NewProductService(productRepo)
+	authService := services.NewAuthService(userRepo)
 
-	auth := r.Group("/")
-	auth.Use(middleware.AuthRequired())
+	// controllers
+	productController := controllers.NewProductController(productService)
+	authController := controllers.NewAuthController(authService)
+	userController := controllers.NewUserController()
+
+	// routes
+	auth := r.Group("/auth")
 	{
-		auth.GET("/users/me", userController.Me)
+		auth.POST("/register", authController.Register)
+		auth.POST("/login", authController.Login)
 	}
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "pong"})
-	})
+	user := r.Group("/users")
+	user.Use(middleware.AuthRequired())
+	{
+		user.GET("/me", userController.Me)
+	}
 
-	// Public
 	r.GET("/products", productController.GetAll)
 	r.GET("/products/:id", productController.GetByID)
 
-	// Admin
 	admin := r.Group("/admin")
 	admin.Use(middleware.AuthRequired(), middleware.AdminOnly())
 	{
 		admin.POST("/products", productController.Create)
 	}
+
 	return r
 }
+
+

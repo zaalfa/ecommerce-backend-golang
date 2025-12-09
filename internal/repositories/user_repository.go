@@ -3,9 +3,19 @@ package repositories
 import (
 	"ecommerce-backend-golang/internal/config"
 	"ecommerce-backend-golang/internal/models"
+
+	"gorm.io/gorm"
 )
 
-type UserRepository struct{}
+type UserRepository struct{
+	db *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{
+		db: db,
+	}
+}
 
 func (r *UserRepository) Create(user *models.User) error {
 	return config.DB.Create(user).Error

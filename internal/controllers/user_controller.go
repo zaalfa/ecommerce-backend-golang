@@ -3,27 +3,25 @@ package controllers
 import (
 	"net/http"
 
-	"ecommerce-backend-golang/internal/repositories"
+	"ecommerce-backend-golang/internal/config"
+	"ecommerce-backend-golang/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
-type UserController struct {
-	userRepo repositories.UserRepository
+type UserController struct{}
+
+func NewUserController() *UserController {
+	return &UserController{}
 }
 
 func (c *UserController) Me(ctx *gin.Context) {
 	userID := ctx.MustGet("user_id").(uint)
 
-	user, err := c.userRepo.FindByID(userID)
-	if err != nil {
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"id":    user.ID,
-		"name":  user.Name,
-		"email": user.Email,
-		"role":  user.Role,
-	})
+	ctx.JSON(http.StatusOK, user)
 }

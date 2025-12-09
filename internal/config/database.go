@@ -25,6 +25,6 @@ func ConnectDatabase() {
 	fmt.Println("Database connected successfully")
 	
 	//auto migrate models
-	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.User{}, &models.Product{})
 	fmt.Println("Database migrated (User table created)")
 }

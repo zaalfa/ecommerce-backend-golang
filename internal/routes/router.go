@@ -12,6 +12,7 @@ func SetupRouter() *gin.Engine {
 
 	authController := controllers.AuthController{}
 	userController := controllers.UserController{}
+	productController := controllers.ProductController{}
 
 	r.POST("/auth/register", authController.Register)
 	r.POST("/auth/login", authController.Login)
@@ -26,5 +27,15 @@ func SetupRouter() *gin.Engine {
 		c.JSON(200, gin.H{"message": "pong"})
 	})
 
+	// Public
+	r.GET("/products", productController.GetAll)
+	r.GET("/products/:id", productController.GetByID)
+
+	// Admin
+	admin := r.Group("/admin")
+	admin.Use(middleware.AuthRequired(), middleware.AdminOnly())
+	{
+		admin.POST("/products", productController.Create)
+	}
 	return r
 }

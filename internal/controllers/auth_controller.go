@@ -49,7 +49,14 @@ func (c *AuthController) Login(ctx *gin.Context) {
 		return
 	}
 
-	token, _ := utils.GenerateToken(user.ID, user.Role)
+	token, err := utils.GenerateToken(user.ID, user.Role)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+		"error": "failed to generate token",
+		})
+		return
+	}
+
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"token": token,

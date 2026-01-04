@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"errors"
 	"os"
 	"time"
@@ -9,36 +8,42 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(userID uint, role string) (string, error) {
+var jwtSecret []byte
+
+func init() {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		return "", fmt.Errorf("JWT_SECRET is empty")
+		secret = "supersecretjwtkey" // fallback
 	}
+	jwtSecret = []byte(secret)
+}
 
+func GenerateToken(userID uint, role string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"role":    role,
-		"exp":     time.Now().Add(24 * time.Hour).Unix(),
+		"exp":     time.Now().Add(time.Hour * 24 * 7).Unix(), // 7 days
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return token.SignedString([]byte(secret))
+	return token.SignedString(jwtSecret)
 }
 
 func ValidateToken(tokenString string) (jwt.MapClaims, error) {
-	secret := os.Getenv("JWT_SECRET")
-
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
+			return nil, errors.New("invalid signing method")
 		}
-		return []byte(secret), nil
+		return jwtSecret, nil
 	})
 
-	if err != nil || !token.Valid {
-		return nil, errors.New("invalid token")
+	if err != nil {
+		return nil, err
 	}
 
-	return token.Claims.(jwt.MapClaims), nil
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, errors.New("invalid token")
 }
